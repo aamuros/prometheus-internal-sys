@@ -318,6 +318,7 @@ describe('DX Projects domain port', () => {
     );
     expect(archived.status).toBe(403);
   });
+
   it('advertises archived Projects as read-only even to their lead and editors', () => {
     const archived = project({ status: 'ARCHIVED' });
 
@@ -332,5 +333,4 @@ describe('DX Projects domain port', () => {
       ),
     ).toThrow();
   });
-
 });
