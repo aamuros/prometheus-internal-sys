@@ -12,8 +12,8 @@ import {
 import type { ProjectStore } from './store.ts';
 
 export type ProjectsDependencies = {
-  /** Verify the token and resolve an authorized member from trusted server-side identity. */
-  resolveMember(token: string): Promise<ProjectMember | null>;
+  /** Verify a Better Auth session from raw request headers and resolve ACTIVE membership server-side. Never trust client-supplied identity. */
+  resolveMember(headers: Headers): Promise<ProjectMember | null>;
   store: ProjectStore;
   now(): string;
 };
@@ -36,10 +36,7 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
   });
 
   router.use('*', async (c, next) => {
-    const header = c.req.header('authorization') ?? '';
-    const match = /^Bearer ([^\s]+)$/i.exec(header);
-    if (!match?.[1]) return c.json({ error: 'Unauthorized' }, 401);
-    const member = await deps.resolveMember(match[1]);
+    const member = await deps.resolveMember(c.req.raw.headers);
     if (!member) return c.json({ error: 'Unauthorized' }, 401);
     if (member.status !== 'ACTIVE')
       return c.json({ error: 'Access denied' }, 403);

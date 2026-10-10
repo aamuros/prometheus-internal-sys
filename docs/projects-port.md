@@ -53,3 +53,15 @@ Before merging: `pnpm check` and `pnpm audit --audit-level=high`.
 The new application's CI must remain green. Run PostgreSQL integration tests, authenticated browser tests, and Vercel runtime checks **before** connecting the router to `server/app.ts`.
 
 There are deliberately **no changes** to existing deployment, authentication, database, frontend routes or CI in this PR.
+
+## First-party session integration (#12)
+
+The Projects router's `resolveMember(headers)` receives the raw request headers, not an extracted Bearer string or a client-supplied member ID. When wiring **self-hosted Better Auth** under the same React/Hono origin, the production resolver must:
+
+1. Call Better Auth's server-side `auth.api.getSession({ headers })` using those headers to validate the signed HTTP-only cookie and session expiry/revocation.
+2. Look up the corresponding application **Member** by the verified Better Auth **User** ID, not by email provided by the caller or by a self-asserted role.
+3. Return `null` for an invalid session or an unregistered Member (401). If a recognized Member is DEACTIVATED, return that membership state so the router denies access with 403. Do not reveal membership details in either response.
+4. Do not rely on browser-side route guards or JWT payload claims as the only authorization layer. Preserve Project Lead/CAN_EDIT checks and re-evaluate role-sensitive changes inside transactions.
+5. Before mounting the router, implement CSRF protection for state-changing project requests, and test SameSite/Origin handling in the deployed Vercel runtime.
+
+The isolated tests provide an example **fake resolver for test purposes only**. It must never be used in production.
