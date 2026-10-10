@@ -150,11 +150,12 @@ export function canEditProject(
   actorMemberId: string,
 ): boolean {
   return (
-    project.leadMemberId === actorMemberId ||
-    project.members.some(
-      (member) =>
-        member.memberId === actorMemberId && member.accessLevel === 'CAN_EDIT',
-    )
+    project.status !== 'ARCHIVED' &&
+    (project.leadMemberId === actorMemberId ||
+      project.members.some(
+        (member) =>
+          member.memberId === actorMemberId && member.accessLevel === 'CAN_EDIT',
+      ))
   );
 }
 
@@ -227,10 +228,7 @@ export function decideProjectChange(
   now: string,
 ): ProjectMutation {
   // Evaluate against the latest row inside the persistence transaction.
-  if (
-    !canEditProject(current, actorMemberId) ||
-    current.status === 'ARCHIVED'
-  ) {
+  if (!canEditProject(current, actorMemberId)) {
     throw new ProjectRuleError(
       'Not permitted to modify this Project.',
       'FORBIDDEN',
