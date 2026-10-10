@@ -107,7 +107,10 @@ export function parseCreateProject(value: unknown): CreateProject {
     ) ||
     new Set(input.departmentIds).size !== input.departmentIds.length
   ) {
-    throw new ProjectRuleError('Choose existing, distinct departments.', 'VALIDATION');
+    throw new ProjectRuleError(
+      'Choose existing, distinct departments.',
+      'VALIDATION',
+    );
   }
   return {
     name,
@@ -228,7 +231,10 @@ export function decideProjectChange(
     !canEditProject(current, actorMemberId) ||
     current.status === 'ARCHIVED'
   ) {
-    throw new ProjectRuleError('Not permitted to modify this Project.', 'FORBIDDEN');
+    throw new ProjectRuleError(
+      'Not permitted to modify this Project.',
+      'FORBIDDEN',
+    );
   }
 
   if (command.kind === 'EDIT_DETAILS') {
