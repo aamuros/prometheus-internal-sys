@@ -27,7 +27,10 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
 
   router.onError((error, c) => {
     if (error instanceof ProjectRuleError) {
-      return c.json({ error: error.message }, error.statusCode);
+      return c.json(
+        { error: error.message },
+        error.kind === 'VALIDATION' ? 400 : 403,
+      );
     }
     return c.json({ error: 'Internal server error' }, 500);
   });
@@ -63,7 +66,7 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
   router.get('/:projectId', async (c) => {
     const id = c.req.param('projectId');
     if (!isProjectId(id))
-      throw new ProjectRuleError('Invalid project ID.', 400);
+      throw new ProjectRuleError('Invalid project ID.', 'VALIDATION');
     const project = await deps.store.get(id);
     if (!project) return c.json({ error: 'Not found' }, 404);
     return c.json(presentProject(project, c.get('member').id));
@@ -72,7 +75,7 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
   router.patch('/:projectId', async (c) => {
     const id = c.req.param('projectId');
     if (!isProjectId(id))
-      throw new ProjectRuleError('Invalid project ID.', 400);
+      throw new ProjectRuleError('Invalid project ID.', 'VALIDATION');
     const change = parseDetails(await c.req.json().catch(() => null));
     const updated = await deps.store.change(id, (current) =>
       decideProjectChange(current, c.get('member').id, change, deps.now()),
@@ -84,7 +87,7 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
   router.patch('/:projectId/status', async (c) => {
     const id = c.req.param('projectId');
     if (!isProjectId(id))
-      throw new ProjectRuleError('Invalid project ID.', 400);
+      throw new ProjectRuleError('Invalid project ID.', 'VALIDATION');
     const change = parseStatus(await c.req.json().catch(() => null));
     const updated = await deps.store.change(id, (current) =>
       decideProjectChange(current, c.get('member').id, change, deps.now()),

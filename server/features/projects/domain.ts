@@ -58,7 +58,7 @@ export type ProjectMutation =
 export class ProjectRuleError extends Error {
   constructor(
     message: string,
-    public readonly statusCode: 400 | 403,
+    public readonly kind: 'VALIDATION' | 'FORBIDDEN',
   ) {
     super(message);
     this.name = 'ProjectRuleError';
@@ -74,17 +74,17 @@ export function isProjectId(value: string): boolean {
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new ProjectRuleError('Invalid project data.', 400);
+    throw new ProjectRuleError('Invalid project data.', 'VALIDATION');
   }
   return value as Record<string, unknown>;
 }
 
 function nonEmptyString(value: unknown, max: number): string {
   if (typeof value !== 'string')
-    throw new ProjectRuleError('Invalid project data.', 400);
+    throw new ProjectRuleError('Invalid project data.', 'VALIDATION');
   const trimmed = value.trim();
   if (!trimmed || trimmed.length > max) {
-    throw new ProjectRuleError('Invalid project data.', 400);
+    throw new ProjectRuleError('Invalid project data.', 'VALIDATION');
   }
   return trimmed;
 }
@@ -97,7 +97,7 @@ export function parseCreateProject(value: unknown): CreateProject {
     typeof input.leadMemberId !== 'string' ||
     !isProjectId(input.leadMemberId)
   ) {
-    throw new ProjectRuleError('Choose an active Project Lead.', 400);
+    throw new ProjectRuleError('Choose an active Project Lead.', 'VALIDATION');
   }
   if (
     !Array.isArray(input.departmentIds) ||
@@ -107,7 +107,7 @@ export function parseCreateProject(value: unknown): CreateProject {
     ) ||
     new Set(input.departmentIds).size !== input.departmentIds.length
   ) {
-    throw new ProjectRuleError('Choose existing, distinct departments.', 400);
+    throw new ProjectRuleError('Choose existing, distinct departments.', 'VALIDATION');
   }
   return {
     name,
@@ -137,7 +137,7 @@ export function parseStatus(
     input.status !== 'IN_PROGRESS' &&
     input.status !== 'DONE'
   ) {
-    throw new ProjectRuleError('Invalid project status.', 400);
+    throw new ProjectRuleError('Invalid project status.', 'VALIDATION');
   }
   return { kind: 'SET_STATUS', status: input.status };
 }
@@ -228,7 +228,7 @@ export function decideProjectChange(
     !canEditProject(current, actorMemberId) ||
     current.status === 'ARCHIVED'
   ) {
-    throw new ProjectRuleError('Not permitted to modify this Project.', 403);
+    throw new ProjectRuleError('Not permitted to modify this Project.', 'FORBIDDEN');
   }
 
   if (command.kind === 'EDIT_DETAILS') {
