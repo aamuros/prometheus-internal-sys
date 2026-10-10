@@ -1,6 +1,12 @@
-import type { CreateProject, ProjectMutation, ProjectSnapshot } from './domain.ts';
+import type {
+  CreateProject,
+  ProjectMutation,
+  ProjectSnapshot,
+} from './domain.ts';
 
-export type PersistedProjectCreate = CreateProject & { createdByMemberId: string };
+export type PersistedProjectCreate = CreateProject & {
+  createdByMemberId: string;
+};
 
 /**
  * Production implementation must use database transactions for create/change.

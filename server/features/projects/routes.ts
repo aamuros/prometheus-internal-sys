@@ -38,14 +38,17 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
     if (!match?.[1]) return c.json({ error: 'Unauthorized' }, 401);
     const member = await deps.resolveMember(match[1]);
     if (!member) return c.json({ error: 'Unauthorized' }, 401);
-    if (member.status !== 'ACTIVE') return c.json({ error: 'Access denied' }, 403);
+    if (member.status !== 'ACTIVE')
+      return c.json({ error: 'Access denied' }, 403);
     c.set('member', member);
     await next();
   });
 
   router.get('/', async (c) => {
     const member = c.get('member');
-    return c.json((await deps.store.list()).map((item) => presentProject(item, member.id)));
+    return c.json(
+      (await deps.store.list()).map((item) => presentProject(item, member.id)),
+    );
   });
 
   router.post('/', async (c) => {
@@ -59,7 +62,8 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
 
   router.get('/:projectId', async (c) => {
     const id = c.req.param('projectId');
-    if (!isProjectId(id)) throw new ProjectRuleError('Invalid project ID.', 400);
+    if (!isProjectId(id))
+      throw new ProjectRuleError('Invalid project ID.', 400);
     const project = await deps.store.get(id);
     if (!project) return c.json({ error: 'Not found' }, 404);
     return c.json(presentProject(project, c.get('member').id));
@@ -67,7 +71,8 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
 
   router.patch('/:projectId', async (c) => {
     const id = c.req.param('projectId');
-    if (!isProjectId(id)) throw new ProjectRuleError('Invalid project ID.', 400);
+    if (!isProjectId(id))
+      throw new ProjectRuleError('Invalid project ID.', 400);
     const change = parseDetails(await c.req.json().catch(() => null));
     const updated = await deps.store.change(id, (current) =>
       decideProjectChange(current, c.get('member').id, change, deps.now()),
@@ -78,7 +83,8 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
 
   router.patch('/:projectId/status', async (c) => {
     const id = c.req.param('projectId');
-    if (!isProjectId(id)) throw new ProjectRuleError('Invalid project ID.', 400);
+    if (!isProjectId(id))
+      throw new ProjectRuleError('Invalid project ID.', 400);
     const change = parseStatus(await c.req.json().catch(() => null));
     const updated = await deps.store.change(id, (current) =>
       decideProjectChange(current, c.get('member').id, change, deps.now()),
