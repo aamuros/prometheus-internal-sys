@@ -5,6 +5,7 @@ import {
   createProjectsRouter,
   decideProjectChange,
   parseCreateProject,
+  presentProject,
   projectMetrics,
   type ProjectMember,
   type ProjectSnapshot,
@@ -317,4 +318,19 @@ describe('DX Projects domain port', () => {
     );
     expect(archived.status).toBe(403);
   });
+  it('advertises archived Projects as read-only even to their lead and editors', () => {
+    const archived = project({ status: 'ARCHIVED' });
+
+    expect(presentProject(archived, leadId).canChangeStatus).toBe(false);
+    expect(presentProject(archived, editorId).canChangeStatus).toBe(false);
+    expect(() =>
+      decideProjectChange(
+        archived,
+        leadId,
+        { kind: 'SET_STATUS', status: 'DONE' },
+        '2026-10-10T00:00:00.000Z',
+      ),
+    ).toThrow();
+  });
+
 });
