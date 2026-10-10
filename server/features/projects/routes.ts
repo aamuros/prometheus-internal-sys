@@ -35,7 +35,7 @@ export function createProjectsRouter(deps: ProjectsDependencies) {
   router.use('*', async (c, next) => {
     const header = c.req.header('authorization') ?? '';
     const match = /^Bearer ([^\s]+)$/i.exec(header);
-    if (!match) return c.json({ error: 'Unauthorized' }, 401);
+    if (!match?.[1]) return c.json({ error: 'Unauthorized' }, 401);
     const member = await deps.resolveMember(match[1]);
     if (!member) return c.json({ error: 'Unauthorized' }, 401);
     if (member.status !== 'ACTIVE') return c.json({ error: 'Access denied' }, 403);
