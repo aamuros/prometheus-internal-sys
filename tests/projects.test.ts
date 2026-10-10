@@ -66,8 +66,11 @@ function router(
     '/api/projects',
     createProjectsRouter({
       store,
-      resolveMember: async (token) => {
-        if (token !== 'valid-token' || options.activeMemberId === null)
+      resolveMember: async (headers) => {
+        if (
+          headers.get('cookie') !== 'prometheus.session=valid-session' ||
+          options.activeMemberId === null
+        )
           return null;
         return {
           id: options.activeMemberId ?? creatorId,
@@ -81,7 +84,7 @@ function router(
   return { app, store };
 }
 
-const authenticated = { Authorization: 'Bearer valid-token' };
+const authenticated = { Cookie: 'prometheus.session=valid-session' };
 const jsonHeaders = { ...authenticated, 'Content-Type': 'application/json' };
 
 describe('DX Projects domain port', () => {
@@ -209,6 +212,29 @@ describe('DX Projects domain port', () => {
     const response = await app.request('/api/projects');
     expect(response.status).toBe(401);
     expect(store.list).not.toHaveBeenCalled();
+  });
+
+  it('never treats a forged bearer token as an authenticated session', async () => {
+    const { app, store } = router();
+    const response = await app.request('/api/projects', {
+      headers: { Authorization: 'Bearer valid-token' },
+    });
+    expect(response.status).toBe(401);
+    expect(store.list).not.toHaveBeenCalled();
+  });
+
+  it('does not read or mutate projects without a verified session', async () => {
+    const { app, store } = router();
+    const response = await app.request('/api/projects/' + projectId + '/status', {
+      method: 'PATCH',
+      headers: {
+        Authorization: 'Bearer ' + creatorId,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'DONE' }),
+    });
+    expect(response.status).toBe(401);
+    expect(store.change).not.toHaveBeenCalled();
   });
 
   it('denies inactive workspace members', async () => {
