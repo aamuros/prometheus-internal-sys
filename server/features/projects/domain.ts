@@ -149,13 +149,13 @@ export function canEditProject(
   project: ProjectSnapshot,
   actorMemberId: string,
 ): boolean {
+  if (project.status === 'ARCHIVED') return false;
   return (
-    project.status !== 'ARCHIVED' &&
-    (project.leadMemberId === actorMemberId ||
-      project.members.some(
-        (member) =>
-          member.memberId === actorMemberId && member.accessLevel === 'CAN_EDIT',
-      ))
+    project.leadMemberId === actorMemberId ||
+    project.members.some(
+      (member) =>
+        member.memberId === actorMemberId && member.accessLevel === 'CAN_EDIT',
+    )
   );
 }
 
