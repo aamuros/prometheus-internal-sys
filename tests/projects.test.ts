@@ -225,14 +225,17 @@ describe('DX Projects domain port', () => {
 
   it('does not read or mutate projects without a verified session', async () => {
     const { app, store } = router();
-    const response = await app.request('/api/projects/' + projectId + '/status', {
-      method: 'PATCH',
-      headers: {
-        Authorization: 'Bearer ' + creatorId,
-        'Content-Type': 'application/json',
+    const response = await app.request(
+      '/api/projects/' + projectId + '/status',
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: 'Bearer ' + creatorId,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: 'DONE' }),
       },
-      body: JSON.stringify({ status: 'DONE' }),
-    });
+    );
     expect(response.status).toBe(401);
     expect(store.change).not.toHaveBeenCalled();
   });
