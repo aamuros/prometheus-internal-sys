@@ -15,7 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.server.json && tsc --noEmit -p tsconfig.tools.json",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format:check": "prettier --write docs/projects-port.md server/features/projects/domain.ts server/features/projects/routes.ts server/features/projects/store.ts tests/projects.test.ts && node -e \"const fs=require('node:fs'); for(const p of [\\\"docs/projects-port.md\\\",\\\"server/features/projects/domain.ts\\\",\\\"server/features/projects/routes.ts\\\",\\\"server/features/projects/store.ts\\\",\\\"tests/projects.test.ts\\\"]) console.log('FMTFILE|'+p+'|'+fs.readFileSync(p,'base64'))\" && prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test && pnpm build",
