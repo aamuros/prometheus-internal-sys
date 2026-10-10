@@ -68,3 +68,17 @@ small, focused changes; avoid unrelated refactoring.
 - Do not weaken checks to pass them. Report failures and unverified external
   actions accurately. Do not push, merge, deploy, or change remote settings
   without explicit authorization.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues in `aamuros/prometheus-internal-sys` holds specifications, tickets, and planning decisions. Read `docs/agents/issue-tracker.md` before issue operations.
+
+### Triage labels
+
+Use the default Matt Pocock triage roles when classifying issues. Read `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Read relevant terms in root `GLOSSARY.md` and decisions in `docs/adr/` when present. Follow `docs/agents/domain.md` when creating or updating domain documentation.
